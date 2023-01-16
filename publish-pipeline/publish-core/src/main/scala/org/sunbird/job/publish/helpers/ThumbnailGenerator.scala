@@ -31,6 +31,7 @@ trait ThumbnailGenerator {
           outFile match {
             case Some(file: File) => {
               val urlArray: Array[String] = cloudStorageUtil.uploadFile(getUploadFolderName(obj.identifier, ARTIFACT_FOLDER, obj.dbObjType.toLowerCase.replaceAll("image", "")), file, Some(true))
+              println("urlArray ::::: "+ urlArray)
               Some(new ObjectData(obj.identifier, obj.metadata ++ Map("appIcon" -> urlArray(1), "posterImage" -> appIcon), obj.extData, obj.hierarchy))
             }
             case _ => {
