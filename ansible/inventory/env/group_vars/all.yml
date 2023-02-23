@@ -1,6 +1,6 @@
 ###################### inQuiry Variables############################
 secrets_path: '{{inventory_dir}}/group_vars/common.yml'
-azure_secret: "{{ sunbird_public_storage_account_key }}"
+azure_secret: "{{ cloud_public_storage_secret }}"
 cloud_storage_config_environment: "{{env}}"
 ansible_vault_password: "{{lp_vault_ansible_vault_password}}"
 env_name: "{{ env }}"
