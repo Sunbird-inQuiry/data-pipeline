@@ -28,7 +28,7 @@ class ObjectUpdaterSpec extends FlatSpec with BeforeAndAfterAll with Matchers wi
   override protected def afterAll(): Unit = {
     super.afterAll()
   }
-/*  
+
   "ObjectUpdater saveOnSuccess" should " update the status for successfully published data " in {
 
     when(mockNeo4JUtil.executeQuery(anyString(), anyString())).thenReturn(any())
@@ -64,7 +64,7 @@ class ObjectUpdaterSpec extends FlatSpec with BeforeAndAfterAll with Matchers wi
     val obj = new TestObjectUpdater()
     obj.saveOnFailure(objData, List("Testing Save on Publish Failure"), 1)
   }
-*/
+
   "ObjectUpdater metaDataQuery" should " give the update query " in {
     val hierarchy = Map("identifier" -> "do_123", "children" -> List(Map("identifier" -> "do_234", "name" -> "Children-1"), Map("identifier" -> "do_345", "name" -> "Children-2")))
     val variants = new util.HashMap[String, String] {{
