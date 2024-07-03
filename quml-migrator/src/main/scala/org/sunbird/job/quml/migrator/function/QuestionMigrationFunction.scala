@@ -46,7 +46,9 @@ class QuestionMigrationFunction(config: QumlMigratorConfig, httpUtil: HttpUtil,
   }
 
   override def processElement(data: MigrationMetadata, context: ProcessFunction[MigrationMetadata, String]#Context, metrics: Metrics): Unit = {
+    val startTime = System.currentTimeMillis()
     logger.info("Question Migration started for : " + data.identifier)
+    logger.info("Start Time of Question Migration: "+ startTime)
     metrics.incCounter(config.questionMigrationCount)
     val definition: ObjectDefinition = definitionCache.getDefinition(data.objectType, data.schemaVersion, config.definitionBasePath)
     val readerConfig = ExtDataConfig(config.questionKeyspaceName, definition.getExternalTable, definition.getExternalPrimaryKey, definition.getExternalProps)
@@ -55,6 +57,7 @@ class QuestionMigrationFunction(config: QumlMigratorConfig, httpUtil: HttpUtil,
     if(messages.isEmpty) {
       val migratedObj: ObjectData = migrateQuestion(objData)(definition).getOrElse(objData)
       val status = migratedObj.metadata.getOrElse("status", "").asInstanceOf[String]
+      val migrationError = migratedObj.metadata.getOrElse("migrationError", "").asInstanceOf[String]
       val qumlVersion: Double = migratedObj.metadata.getOrElse("qumlVersion", 1.0).asInstanceOf[Double]
       val migrationVersion: Double = migratedObj.metadata.getOrElse("migrationVersion", 0.0).asInstanceOf[Double]
       if (migrationVersion == 3.0 && qumlVersion == 1.1) {
@@ -68,9 +71,8 @@ class QuestionMigrationFunction(config: QumlMigratorConfig, httpUtil: HttpUtil,
           logger.info("Question Re Publish Event Triggered Successfully For : " + data.identifier)
         }
       } else {
-        logger.info("Question Migration Failed For : " + data.identifier + " | Errors : " + messages.mkString("; "))
-        val errorMessages = messages.mkString("; ")
-        val metadata = objData.metadata ++ Map[String, AnyRef]("migrationVersion" -> 2.1.asInstanceOf[AnyRef], "migrationError" -> errorMessages)
+        logger.info("Question Migration Failed For : " + data.identifier + " | Errors : " + migrationError)
+        val metadata = objData.metadata ++ Map[String, AnyRef]("migrationVersion" -> 2.1.asInstanceOf[AnyRef], "migrationError" -> migrationError)
         val newObj = new ObjectData(objData.identifier, metadata, objData.extData, objData.hierarchy)
         saveOnFailure(newObj)(neo4JUtil)
         metrics.incCounter(config.questionMigrationFailedEventCount)
@@ -83,6 +85,10 @@ class QuestionMigrationFunction(config: QumlMigratorConfig, httpUtil: HttpUtil,
       saveOnFailure(newObj)(neo4JUtil)
       metrics.incCounter(config.questionMigrationSkippedEventCount)
     }
+    val endTime = System.currentTimeMillis()
+    val processingTime = endTime - startTime
+    logger.info("End Time of Question Migration: "+ endTime)
+    logger.info(s"Total Processing Time For Question Migration (Millisecond): ${processingTime}")
   }
 
   def pushQuestionPublishEvent(objMetadata: Map[String, AnyRef], context: ProcessFunction[MigrationMetadata, String]#Context, metrics: Metrics, config: QumlMigratorConfig): Unit = {
