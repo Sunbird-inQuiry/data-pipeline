@@ -84,7 +84,6 @@ return """&lt;b&gt;This parameter is not used&lt;/b&gt;"""</script>
             <secureScript plugin="script-security@1138.v8e727069a_025">
               <script>return[
 'async-questionset-publish',
-'questionset-republish',
 'user-pii-data-updater'
 ]</script>
               <sandbox>true</sandbox>

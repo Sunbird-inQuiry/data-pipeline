@@ -28,7 +28,6 @@ class QumlMigratorConfigSpec extends FlatSpec with BeforeAndAfterAll with Matche
     assert(StringUtils.equalsIgnoreCase("questionset-migration-failed-count", jobConfig.questionSetMigrationFailedEventCount))
     assert(StringUtils.equalsIgnoreCase("questionset-migration-skipped-count", jobConfig.questionSetMigrationSkippedEventCount))
     assert(StringUtils.equalsIgnoreCase("question-republish-count", jobConfig.questionRepublishEventCount))
-    assert(StringUtils.equalsIgnoreCase("questionset-republish-count", jobConfig.questionSetRepublishEventCount))
     assert(StringUtils.equalsIgnoreCase("localhost", jobConfig.cassandraHost))
     assert(9142 == jobConfig.cassandraPort)
     assert(StringUtils.equalsIgnoreCase("local_hierarchy_store", jobConfig.questionSetKeyspaceName))

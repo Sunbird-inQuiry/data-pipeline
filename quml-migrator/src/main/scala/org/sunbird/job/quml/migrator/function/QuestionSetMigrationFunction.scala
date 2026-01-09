@@ -17,8 +17,8 @@ import org.sunbird.job.quml.migrator.task.QumlMigratorConfig
 import scala.concurrent.ExecutionContext
 
 class QuestionSetMigrationFunction(config: QumlMigratorConfig, httpUtil: HttpUtil,
-                                   @transient var neo4JUtil: Neo4JUtil = null,
-                                   @transient var cassandraUtil: CassandraUtil = null,
+    @transient var neo4JUtil: Neo4JUtil = null,
+    @transient var cassandraUtil: CassandraUtil = null,
                                    @transient var definitionCache: DefinitionCache = null)
                                   (implicit val stringTypeInfo: TypeInformation[String])
   extends BaseProcessFunction[MigrationMetadata, String](config) with QuestionSetMigrator {
@@ -44,7 +44,7 @@ class QuestionSetMigrationFunction(config: QumlMigratorConfig, httpUtil: HttpUti
   }
 
   override def metricsList(): List[String] = {
-    List(config.questionSetMigrationEventCount, config.questionSetMigrationSuccessEventCount, config.questionSetMigrationFailedEventCount, config.questionSetMigrationSkippedEventCount, config.questionSetRepublishEventCount)
+    List(config.questionSetMigrationEventCount, config.questionSetMigrationSuccessEventCount, config.questionSetMigrationFailedEventCount, config.questionSetMigrationSkippedEventCount)
   }
 
   override def processElement(data: MigrationMetadata, context: ProcessFunction[MigrationMetadata, String]#Context, metrics: Metrics): Unit = {
@@ -68,10 +68,7 @@ class QuestionSetMigrationFunction(config: QumlMigratorConfig, httpUtil: HttpUti
         saveOnSuccess(migratedObj)(neo4JUtil, cassandraUtil, qumlReaderConfig, definitionCache, config)
         metrics.incCounter(config.questionSetMigrationSuccessEventCount)
         logger.info("QuestionSet Migration Successful For : " + data.identifier)
-        if (statusList.contains(status)) {
-          pushQuestionPublishEvent(migratedObj.metadata, context, metrics, config)
-          logger.info("QuestionSet Re Publish Event Triggered Successfully For : " + data.identifier)
-        }
+
       } else {
         logger.info("QuestionSet Migration Failed For : " + data.identifier + " | Errors : " + migrationError)
         val metadata = objData.metadata ++ Map[String, AnyRef]("migrationVersion" -> 2.1.asInstanceOf[AnyRef], "migrationError" -> migrationError)
@@ -90,12 +87,9 @@ class QuestionSetMigrationFunction(config: QumlMigratorConfig, httpUtil: HttpUti
     val endTime = System.currentTimeMillis()
     val processingTime = endTime - startTime
     logger.info("End Time of QuestionSet Migration: " + endTime)
-    logger.info(s"Total Processing Time For QuestionSet Migration (Millisecond): ${processingTime}")
-  }
-
-  def pushQuestionPublishEvent(objMetadata: Map[String, AnyRef], context: ProcessFunction[MigrationMetadata, String]#Context, metrics: Metrics, config: QumlMigratorConfig): Unit = {
-    context.output(config.liveQuestionSetPublishEventOutTag, getRepublishEvent(objMetadata, "question-republish", config.jobEnv))
-    metrics.incCounter(config.questionSetRepublishEventCount)
+    logger.info(
+      s"Total Processing Time For QuestionSet Migration (Millisecond): ${processingTime}"
+    )
   }
 
 }
